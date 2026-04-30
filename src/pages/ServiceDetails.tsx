@@ -77,7 +77,7 @@ export default function ProductDetails() {
     const productUrl = window.location.href;
     const message = `استفسار عن المنتج: ${service.title}
 رابط المنتج: ${productUrl}`;
-    window.open(`https://wa.me/201027381559?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/201099490594?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   // التقليب التلقائي للصور في المنتج الرئيسي فقط

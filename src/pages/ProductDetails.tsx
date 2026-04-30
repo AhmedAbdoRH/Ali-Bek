@@ -94,7 +94,7 @@ export default function ProductDetails() {
     if (!service) return;
     const productUrl = window.location.href;
     const message = `استفسار عن المنتج: ${service.title}\nرابط المنتج: ${productUrl}`;
-    window.open(`https://wa.me/201027381559?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/201099490594?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   // Get all images for the main product carousel
@@ -181,7 +181,7 @@ export default function ProductDetails() {
         <div className="text-xl text-secondary">{error || 'المنتج غير موجود'}</div>
         <button
           onClick={() => navigate('/')}
-          className="bg-secondary text-primary px-6 py-2 rounded-lg hover:bg-opacity-90"
+          className="bg-secondary text-primary px-6 py-2 hover:bg-opacity-90"
         >
           العودة للرئيسية
         </button>
@@ -249,7 +249,7 @@ export default function ProductDetails() {
               </div>
               <div className="md:w-1/2 p-8">
                 <h1 className="text-3xl font-bold mb-4 text-secondary text-right">{service.title}</h1>
-                <p className="text-white text-opacity-88 mb-6 text-lg leading-relaxed text-right" style={{ whiteSpace: 'pre-wrap' }}>
+                <p className="text-gray-800 mb-6 text-lg leading-relaxed text-right" style={{ whiteSpace: 'pre-wrap' }}>
   {service.description}
 </p>
                 <div className="border-t border-gray-700 pt-6 mb-6">
@@ -263,26 +263,28 @@ export default function ProductDetails() {
                       <span>{service.price} ج</span>
                     )}
                   </div>
+
                   <div className="flex gap-4 items-center">
                     <button
                       onClick={handleContact}
-                      className="flex-1 bg-[#25D366] text-white py-3 px-6 rounded-lg font-bold hover:bg-opacity-90 flex items-center justify-center gap-2"
+                      className="flex-1 bg-[#c1121f] hover:bg-red-600 text-yellow-400 py-3 px-6 font-bold hover:bg-opacity-90 flex items-center justify-center gap-2"
                     >
-                      <MessageCircle className="h-5 w-5" />
-                      تواصل معنا للطلب
+                      <MessageCircle className="h-5 w-5 text-white" />
+                      <span className="text-white">تواصل معنا للطلب</span>
                     </button>
+
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         addToCart({
-                          id: service.id,
                           title: service.title,
-                          price: service.sale_price || service.price,
-                          imageUrl: service.image_url || ''
+                          price: String(service.sale_price || service.price || ''),
+                          imageUrl: service.image_url || '',
+                          productId: String(service.id),
                         });
                         toast.success('تمت إضافة المنتج إلى السلة');
                       }}
-                      className="bg-[#FFD700] hover:bg-yellow-500 text-black p-3 rounded-lg font-bold flex items-center justify-center"
+                      className="bg-[#c1121f] hover:bg-red-600 text-yellow-400 p-3 font-bold flex items-center justify-center"
                       title="أضف إلى السلة"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

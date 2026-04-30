@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export default function LoadingScreen({
   logoUrl,
@@ -70,10 +70,13 @@ export default function LoadingScreen({
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-gradient-to-br from-[#232526] to-[#414345] transition-opacity ease-in-out ${
+      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity ease-in-out ${
         fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
-      style={{ transitionDuration: `${FADE_OUT_DURATION_MS}ms` }}
+      style={{ 
+        transitionDuration: `${FADE_OUT_DURATION_MS}ms`,
+        backgroundColor: '#ffffff'
+      }}
     >
       {/* Only render logo or custom loader once image loading status is determined */}
       {imageLoaded && (
@@ -150,7 +153,7 @@ export default function LoadingScreen({
         .custom-loader div {
           box-sizing: border-box; /* Ensure border doesn't add to size */
           position: absolute;
-          border: 4px solid #FFFFFF; /* Loader color set to white */
+          border: 4px solid #2a2a2a; /* Loader color set to dark */
           border-radius: 50%;
           animation: loader8435 1s ease-out infinite;
         }
