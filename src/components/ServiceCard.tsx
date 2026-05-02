@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MessageCircle, ShoppingCart, Check } from 'lucide-react';
+import { MessageCircle, ShoppingBag, Check } from 'lucide-react';
 import { useCart } from '../contexts/CartContext';
 
 interface ProductCardProps {
@@ -13,117 +13,120 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ title, description, imageUrl, price, salePrice, id }: ProductCardProps) {
-  /**
-   * Handles the click event for the "Contact Now" button.
-   * Prevents the default link behavior and opens a WhatsApp chat
-   * with a pre-filled message including product details.
-   * @param e - The mouse event.
-   */
-  const handleContactClick = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent the default link behavior
-    // Construct the URL for the specific product page
-    const productUrl = `${window.location.origin}/product/${id}`;;
-    // Create the pre-filled message for WhatsApp
-    const message = `استفسار عن المنتج: ${title}
-رابط المنتج: ${productUrl}`;
-    // Open the WhatsApp chat link in a new tab
-    window.open(`https://wa.me/201099490594?text=${encodeURIComponent(message)}`, '_blank');
-  };
-
   const { addToCart } = useCart();
   const [isAdding, setIsAdding] = useState(false);
   const [isAdded, setIsAdded] = useState(false);
 
+  const handleContactClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const productUrl = `${window.location.origin}/product/${id}`;
+    const message = `استفسار عن المنتج: ${title}\nرابط المنتج: ${productUrl}`;
+    window.open(`https://wa.me/201099490594?text=${encodeURIComponent(message)}`, '_blank');
+  };
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    e.stopPropagation();
-    
     setIsAdding(true);
     
-    // Add to cart
     addToCart({
       id,
       title,
-      price: salePrice || price, // Use sale price if available
+      price: salePrice || price,
       imageUrl,
     });
     
-    // Show added feedback
     setIsAdded(true);
-    
-    // Reset button state after animation
     setTimeout(() => {
       setIsAdding(false);
       setTimeout(() => setIsAdded(false), 2000);
-    }, 1000);
+    }, 600);
   };
 
   return (
-    <div className="group relative bg-white border border-gray-200 overflow-hidden transition-all duration-150 hover:scale-105 hover:shadow-lg">
-      <Link to={`/product/${id}`} className="block">
-        <div className="relative aspect-[3/4] w-full">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-            <h3 className="text-base font-bold text-white text-center">
-              {title}
-            </h3>
+    <div 
+      className="group flex flex-col bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-1" 
+      dir="rtl"
+    >
+      {/* القسم العلوي: الصورة والرابط */}
+      <Link to={`/product/${id}`} className="relative block aspect-[3/4] w-full overflow-hidden bg-gray-50">
+        <img
+          src={imageUrl}
+          alt={title}
+          className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+        />
+        
+        {/* طبقة تدرج خفيفة جداً لإبراز البادج */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* بادج التخفيض الفخم */}
+        {salePrice && (
+          <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg shadow-red-600/30 z-10 flex items-center gap-1.5 backdrop-blur-sm">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white"></span>
+            </span>
+            تخفيض
           </div>
-        </div>
-        <div className="px-4 py-3">
-          <p className="text-gray-600 text-sm">
-            {description.split(/\r?\n/)[0]}
-          </p>
-        </div>
+        )}
       </Link>
       
-      <div className="px-4 py-4 bg-gray-900">
-        <div className="flex justify-between items-center">
-          <div className="flex flex-col items-end">
+      {/* القسم السفلي: التفاصيل والأزرار */}
+      <div className="flex flex-col flex-1 p-4">
+        {/* العنوان والسعر (رابط أيضاً) */}
+        <Link to={`/product/${id}`} className="block flex-1 mb-4">
+          <h3 className="text-gray-900 font-bold text-base line-clamp-1 mb-1 group-hover:text-red-600 transition-colors duration-300">
+            {title}
+          </h3>
+          
+          <div className="flex items-baseline gap-2 mt-2">
             {salePrice ? (
               <>
-                <span className="font-bold text-lg text-white">{salePrice} ج</span>
-                <span className="text-sm text-gray-400 line-through">{price} ج</span>
+                <span className="font-black text-red-600 text-lg tracking-tight">{salePrice} ج.م</span>
+                <span className="text-sm font-medium text-gray-400 line-through decoration-gray-300">{price}</span>
               </>
             ) : (
-              <span className="font-bold text-lg text-white">{price} ج</span>
+              <span className="font-black text-gray-900 text-lg tracking-tight">{price} ج.م</span>
             )}
           </div>
+        </Link>
+        
+        {/* منطقة الأزرار (أزرار منفصلة متساوية) */}
+        <div className="grid grid-cols-2 gap-2 mt-auto">
+          {/* زر إضافة للسلة */}
+          <button
+            onClick={handleAddToCart}
+            disabled={isAdding || isAdded}
+            className={`relative flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-sm font-bold transition-all duration-300 overflow-hidden
+              ${isAdded 
+                ? 'bg-green-500 text-white' 
+                : 'bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg'
+              } ${isAdding ? 'opacity-90' : ''}`}
+            title="أضف إلى السلة"
+          >
+            {isAdding ? (
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            ) : isAdded ? (
+              <>
+                <Check className="h-4 w-4" />
+                <span>تمت الإضافة</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="h-4 w-4" />
+                <span>للسلة</span>
+              </>
+            )}
+          </button>
           
-          <div className="flex gap-2">
-            {/* Add to Cart Button */}
-            <button
-              onClick={handleAddToCart}
-              disabled={isAdding || isAdded}
-              className={`flex items-center justify-center p-2 transition-all duration-300 ${
-                isAdded 
-                  ? 'bg-green-500 text-white' 
-                  : `bg-[#c1121f] hover:bg-red-600 text-yellow-400`
-              } ${isAdding ? 'opacity-75' : ''}`}
-              title={isAdded ? 'تمت الإضافة' : 'أضف إلى السلة'}
-            >
-              {isAdding ? (
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              ) : isAdded ? (
-                <Check className="h-5 w-5" />
-              ) : (
-                <ShoppingCart className="h-5 w-5" />
-              )}
-            </button>
-            
-            {/* Contact Button */}
-            <button
-              onClick={handleContactClick}
-              className="bg-[#c1121f] hover:bg-red-600 text-yellow-400 px-4 py-2 transition-colors duration-300 flex items-center gap-2"
-            >
-              <MessageCircle className="h-5 w-5 text-white" />
-              <span className="hidden sm:inline text-white">اطلب الآن</span>
-            </button>
-          </div>
+          {/* زر اطلب الآن */}
+          <button
+            onClick={handleContactClick}
+            className="flex items-center justify-center gap-1.5 bg-red-600 hover:bg-red-700 text-white py-2.5 px-2 rounded-xl transition-all duration-300 text-sm font-bold shadow-md shadow-red-600/20 hover:shadow-red-600/40 active:scale-95"
+            title="اطلب الآن"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>اطلب الآن</span>
+          </button>
         </div>
       </div>
     </div>

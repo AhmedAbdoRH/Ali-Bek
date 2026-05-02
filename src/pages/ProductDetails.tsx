@@ -1,65 +1,40 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Service } from '../types/database';
-import { MessageCircle } from 'lucide-react';
-import { useCart } from '../contexts/CartContext';
-import { toast } from 'react-toastify';
-
-function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
-}
+import { MessageCircle, ShoppingBag, Share2, Check, ArrowRight } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
+import { useCart } from '../contexts/CartContext'; // تأكد من مسار الكونتيكست الخاص بك
 
 export default function ProductDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
+  
   const [service, setService] = useState<Service | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [suggested, setSuggested] = useState<Service[]>([]);
+  
+  // حالات زر السلة
+  const [isAdding, setIsAdding] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
 
-  // Image slider states
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currentTransform, setCurrentTransform] = useState('translateX(0)');
-  const [prevTransform, setPrevTransform] = useState('translateX(0)');
-  const [prevImageIndexState, setPrevImageIndexState] = useState<number | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const { addToCart } = useCart();
+  // حالة الصور
+  const [currentImage, setCurrentImage] = useState(0);
 
-  // Scroll to top when product changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  // Scroll to top when product changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [id]);
-
-  // Fetch service and suggested products on ID change
   useEffect(() => {
     if (id) {
       fetchService(id);
-      setCurrentImageIndex(0); // Reset image index when product changes
+      fetchSuggested();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [id]);
-
-  // Fetch suggested products when service data is loaded
-  useEffect(() => {
-    if (service) {
-      fetchSuggested();
-    }
-  }, [service]);
 
   const fetchService = async (serviceId: string) => {
     try {
       setIsLoading(true);
       setError(null);
-
       const { data, error: fetchError } = await supabase
         .from('services')
         .select('*')
@@ -78,15 +53,11 @@ export default function ProductDetails() {
   };
 
   const fetchSuggested = async () => {
-    if (!service) return;
-    
     const { data } = await supabase
       .from('services')
       .select('*')
-      .eq('category_id', service.category_id) // Filter by the same category
-      .neq('id', id) // Exclude current product
-      .limit(10);
-      
+      .neq('id', id)
+      .limit(8);
     setSuggested(data || []);
   };
 
@@ -97,91 +68,60 @@ export default function ProductDetails() {
     window.open(`https://wa.me/201099490594?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  // Get all images for the main product carousel
+  const handleShare = () => {
+    if (!service) return;
+    const shareUrl = `https://wa.me/?text=${encodeURIComponent(`شاهد هذه القطعة الأنيقة: ${service.title}\n${window.location.href}`)}`;
+    window.open(shareUrl, '_blank');
+  };
+
+  const handleAddToCart = () => {
+    if (!service) return;
+    setIsAdding(true);
+    addToCart({
+      id: service.id,
+      title: service.title,
+      price: service.price,
+      imageUrl: service.image_url || '',
+    });
+    setIsAdded(true);
+    setTimeout(() => {
+      setIsAdding(false);
+      setTimeout(() => setIsAdded(false), 2000);
+    }, 600);
+  };
+
   const images: string[] = [
     service?.image_url || '',
     ...(Array.isArray(service?.gallery) ? service.gallery : [])
   ].filter(Boolean);
 
-  // Automatic image cycling for the main product
+  // تقليب الصور التلقائي البطيء والناعم
   useEffect(() => {
     if (images.length <= 1) return;
-
     const interval = setInterval(() => {
-      setCurrentImageIndex((prev) => (prev + 1) % images.length);
-    }, 4500); // 4.5 seconds per image
-
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 4500);
     return () => clearInterval(interval);
   }, [images.length]);
 
-  // Image transition effect
-  const previousImageIndex = usePrevious(currentImageIndex);
-
-  useEffect(() => {
-    // Only apply transition if the image actually changed
-    if (previousImageIndex !== undefined && previousImageIndex !== currentImageIndex) {
-      setIsTransitioning(true);
-      setPrevImageIndexState(previousImageIndex); // Store the previous image index
-
-      // Start by positioning the new image to the right and the old image in place
-      setCurrentTransform('translateX(100%)');
-      setPrevTransform('translateX(0)');
-
-      // Use requestAnimationFrame for smoother transition
-      const raf = requestAnimationFrame(() => {
-        setCurrentTransform('translateX(0)'); // New image slides into view
-        setPrevTransform('translateX(-100%)'); // Old image slides out to the left
-      });
-
-      // Cleanup after transition
-      const cleanupTimer = setTimeout(() => {
-        setIsTransitioning(false);
-        setPrevImageIndexState(null); // Remove previous image from DOM after transition
-      }, 1800); // Duration of the transition
-
-      return () => {
-        cancelAnimationFrame(raf);
-        clearTimeout(cleanupTimer);
-      };
-    } else {
-      // Reset transforms if no transition is needed (e.g., initial load or image changed to same image)
-      setCurrentTransform('translateX(0)');
-      setPrevTransform('translateX(0)');
-      setPrevImageIndexState(null);
-      setIsTransitioning(false);
-    }
-  }, [currentImageIndex, previousImageIndex]);
-
-
-  // Extracted background styles for reuse
-  const backgroundStyles = {
-    background: 'var(--background-gradient, var(--background-color, #232526))',
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-    backgroundAttachment: 'fixed',
-  };
+  const defaultScreenshot = '/screenshot.jpg';
+  const ogImage = service?.image_url && service.image_url.trim() !== '' ? service.image_url : defaultScreenshot;
 
   if (isLoading) {
     return (
-      <div
-        className="min-h-screen flex items-center justify-center pt-24"
-        style={backgroundStyles}
-      >
-        <div className="text-xl text-secondary">جاري التحميل...</div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center pt-24" dir="rtl">
+        <div className="w-8 h-8 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error || !service) {
     return (
-      <div
-        className="min-h-screen flex flex-col items-center justify-center gap-4 pt-24"
-        style={backgroundStyles}
-      >
-        <div className="text-xl text-secondary">{error || 'المنتج غير موجود'}</div>
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-6 pt-24" dir="rtl">
+        <div className="text-xl text-gray-800 font-medium">{error || 'عذراً، المنتج غير موجود'}</div>
         <button
           onClick={() => navigate('/')}
-          className="bg-secondary text-primary px-6 py-2 hover:bg-opacity-90"
+          className="bg-gray-900 text-white px-8 py-3 rounded-xl font-medium hover:bg-gray-800 transition-colors"
         >
           العودة للرئيسية
         </button>
@@ -190,184 +130,183 @@ export default function ProductDetails() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pt-24 relative" style={backgroundStyles}>
-      <div className="flex items-center justify-center flex-grow py-8">
-        <div className="container mx-auto px-4 max-w-4xl lg:max-w-5xl">
-          <div className="rounded-lg shadow-lg overflow-hidden glass">
-            <div className="md:flex">
-              <div className="md:w-1/2">
-                <div className="w-full aspect-[4/3] bg-gray-200 relative rounded-t-lg md:rounded-none md:rounded-s-lg overflow-hidden">
-                  {prevImageIndexState !== null && isTransitioning && (
+    <>
+      <Helmet>
+        <meta property="og:title" content={service.title} />
+        <meta property="og:description" content={service.description} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:url" content={typeof window !== 'undefined' ? window.location.href : ''} />
+        <meta property="og:type" content="product" />
+      </Helmet>
+
+      <div className="min-h-screen bg-[#FCFCFC] pt-24 pb-12 font-sans" dir="rtl">
+        
+        {/* زر العودة العلوي */}
+        <div className="container mx-auto px-4 max-w-6xl mb-6">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium"
+          >
+            <ArrowRight className="w-4 h-4" />
+            رجوع
+          </button>
+        </div>
+
+        {/* كارت تفاصيل المنتج */}
+        <div className="container mx-auto px-4 max-w-6xl mb-16">
+          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="flex flex-col lg:flex-row">
+              
+              {/* قسم الصور (يمين) */}
+              <div className="w-full lg:w-1/2 relative bg-gray-100">
+                <div className="relative aspect-[3/4] w-full overflow-hidden">
+                  {images.map((img, idx) => (
                     <img
-                      src={images[prevImageIndexState]}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover"
-                      style={{
-                        transform: prevTransform,
-                        zIndex: 10, // Ensure previous image is above current initially
-                        transition: isTransitioning
-                          ? 'transform 1800ms cubic-bezier(.4,0,.2,1)'
-                          : 'none',
-                        willChange: 'transform',
-                      }}
+                      key={idx}
+                      src={img}
+                      alt={`${service.title} - صورة ${idx + 1}`}
+                      className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ease-in-out ${
+                        currentImage === idx 
+                          ? 'opacity-100 scale-100 z-10' 
+                          : 'opacity-0 scale-105 z-0'
+                      }`}
                       draggable={false}
                     />
-                  )}
-                  <img
-                    src={images[currentImageIndex] || ''}
-                    alt={service.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{
-                      transform: currentTransform,
-                      zIndex: 5, // Ensure current image slides under previous or comes to front
-                      transition: isTransitioning
-                        ? 'transform 1800ms cubic-bezier(.4,0,.2,1)'
-                        : 'none',
-                      willChange: 'transform',
-                    }}
-                    draggable={false}
-                  />
+                  ))}
+                  
+                  {/* مؤشرات الصور (Dots) */}
                   {images.length > 1 && (
-                    <>
-                      {/* Image indicators */}
-                      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                        {images.map((img, idx) => (
-                          <button
-                            key={img + idx}
-                            className={`w-2 h-2 rounded-full border-none transition-colors ease-in-out duration-500 ${
-                              currentImageIndex === idx ? 'bg-white' : 'bg-white/30'
-                            }`}
-                            onClick={() => setCurrentImageIndex(idx)}
-                            aria-label={`عرض الصورة رقم ${idx + 1}`}
-                            type="button"
-                          />
-                        ))}
-                      </div>
-                    </>
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20 bg-white/30 backdrop-blur-md px-3 py-1.5 rounded-full">
+                      {images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                            currentImage === idx ? 'bg-gray-900 w-4' : 'bg-gray-900/40'
+                          }`}
+                          onClick={() => setCurrentImage(idx)}
+                          aria-label={`الصورة رقم ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
               </div>
-              <div className="md:w-1/2 p-8">
-                <h1 className="text-3xl font-bold mb-4 text-secondary text-right">{service.title}</h1>
-                <p className="text-gray-800 mb-6 text-lg leading-relaxed text-right" style={{ whiteSpace: 'pre-wrap' }}>
-  {service.description}
-</p>
-                <div className="border-t border-gray-700 pt-6 mb-6">
-                  <div className="text-2xl font-bold text-accent mb-6 text-right">
-                    {service.sale_price ? (
-                      <div className="flex flex-col items-end">
-                        <span className="text-2xl text-[#FFD700]">{service.sale_price} ج</span>
-                        <span className="text-lg text-gray-400 line-through">{service.price} ج</span>
-                      </div>
+
+              {/* قسم التفاصيل (يسار) */}
+              <div className="w-full lg:w-1/2 p-6 lg:p-12 flex flex-col">
+                <div className="flex justify-between items-start mb-4">
+                  <h1 className="text-2xl lg:text-3xl font-black text-gray-900 leading-tight">
+                    {service.title}
+                  </h1>
+                  {/* زر المشاركة كأيقونة أنيقة */}
+                  <button 
+                    onClick={handleShare}
+                    className="p-2 text-gray-400 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+                    title="مشاركة المنتج"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="text-3xl font-black text-red-600 mb-8 tracking-tight">
+                  {service.price} ج.م
+                </div>
+
+                <div className="prose prose-gray max-w-none mb-10">
+                  <h3 className="text-sm font-bold text-gray-900 mb-2">تفاصيل القطعة:</h3>
+                  <p className="text-gray-600 leading-relaxed text-sm lg:text-base whitespace-pre-line">
+                    {service.description}
+                  </p>
+                </div>
+
+                {/* منطقة الأزرار في أسفل الشاشة (تتمدد لتأخذ المساحة المتبقية) */}
+                <div className="mt-auto space-y-3 pt-6 border-t border-gray-100">
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAdding || isAdded}
+                    className={`w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold transition-all duration-300 ${
+                      isAdded 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-red-500 text-white hover:bg-red-600 hover:shadow-xl hover:shadow-red-500/20'
+                    }`}
+                  >
+                    {isAdding ? (
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : isAdded ? (
+                      <>
+                        <Check className="h-5 w-5" />
+                        <span>تمت الإضافة للسلة</span>
+                      </>
                     ) : (
-                      <span>{service.price} ج</span>
+                      <>
+                        <ShoppingBag className="h-5 w-5" />
+                        <span>أضف إلى سلة التسوق</span>
+                      </>
                     )}
-                  </div>
+                  </button>
 
-                  <div className="flex gap-4 items-center">
-                    <button
-                      onClick={handleContact}
-                      className="flex-1 bg-[#c1121f] hover:bg-red-600 text-yellow-400 py-3 px-6 font-bold hover:bg-opacity-90 flex items-center justify-center gap-2"
-                    >
-                      <MessageCircle className="h-5 w-5 text-white" />
-                      <span className="text-white">تواصل معنا للطلب</span>
-                    </button>
-
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        addToCart({
-                          title: service.title,
-                          price: String(service.sale_price || service.price || ''),
-                          imageUrl: service.image_url || '',
-                          productId: String(service.id),
-                        });
-                        toast.success('تمت إضافة المنتج إلى السلة');
-                      }}
-                      className="bg-[#c1121f] hover:bg-red-600 text-yellow-400 p-3 font-bold flex items-center justify-center"
-                      title="أضف إلى السلة"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="9" cy="21" r="1"></circle>
-                        <circle cx="20" cy="21" r="1"></circle>
-                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                      </svg>
-                    </button>
-                  </div>
+                  <button
+                    onClick={handleContact}
+                    className="w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl font-bold text-gray-900 bg-white border-2 border-gray-200 hover:border-gray-900 hover:bg-gray-50 transition-all duration-300"
+                  >
+                    <MessageCircle className="h-5 w-5 text-green-500" />
+                    <span>استفسر أو اطلب عبر الواتساب</span>
+                  </button>
                 </div>
               </div>
+              
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Suggested Products */}
-      {suggested.length > 0 && (
-        <div className="container mx-auto px-4 max-w-4xl lg:max-w-5xl mb-8">
-          <h2 className="text-xl font-bold text-secondary mb-4 text-right">متوفر لدينا ايضا</h2>
-          <div
-            className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar"
-            style={{ WebkitOverflowScrolling: 'touch' }}
-          >
-            {suggested.map((item) => {
-              const images: string[] = [
-                item.image_url || '',
-                ...(Array.isArray(item.gallery) ? item.gallery : [])
-              ].filter(Boolean);
-              const imageUrl = images[0] || '';
+        {/* قسم قد يعجبك أيضاً */}
+        {suggested.length > 0 && (
+          <div className="container mx-auto px-4 max-w-6xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-black text-gray-900">قد يعجبك أيضاً</h2>
+            </div>
+            
+            <div className="flex gap-4 overflow-x-auto pb-6 hide-scrollbar -mx-4 px-4 snap-x">
+              {suggested.map((item) => {
+                const itemImages = [item.image_url || '', ...(Array.isArray(item.gallery) ? item.gallery : [])].filter(Boolean);
+                const imageUrl = itemImages[0] || '';
 
-              return (
-                <div
-                  key={item.id}
-                  className="
-                    min-w-[160px] max-w-[180px]
-                    md:min-w-[220px] md:max-w-[260px]
-                    bg-white/10 rounded-lg shadow p-2 flex-shrink-0 cursor-pointer hover:scale-105 transition
-                  "
-                  onClick={() => navigate(`/product/${item.id}`)}
-                >
-                  <img
-                    src={imageUrl}
-                    alt={item.title}
-                    className="w-full h-24 md:h-40 object-cover rounded"
-                  />
-                  <div className="mt-2 text-sm md:text-base font-bold text-secondary truncate text-right">{item.title}</div>
-                  <div className="flex flex-col items-end">
-                    {item.sale_price ? (
-                      <>
-                        <span className="text-xs md:text-sm text-[#FFD700]">{item.sale_price} ج</span>
-                        <span className="text-xs text-gray-400 line-through">{item.price} ج</span>
-                      </>
-                    ) : (
-                      <span className="text-xs md:text-sm text-accent">{item.price} ج</span>
-                    )}
+                return (
+                  <div
+                    key={item.id}
+                    className="group min-w-[160px] md:min-w-[220px] cursor-pointer snap-start"
+                    onClick={() => navigate(`/product/${item.id}`)}
+                  >
+                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden mb-3 bg-gray-100">
+                      <img
+                        src={imageUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out"
+                      />
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 truncate mb-1 group-hover:text-red-600 transition-colors">
+                      {item.title}
+                    </h3>
+                    <div className="text-sm font-black text-red-600">
+                      {item.price} ج.م
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
-          {/* Styles to hide scrollbar */}
-          <style>{`
-            .hide-scrollbar {
-              scrollbar-width: none;
-              -ms-overflow-style: none;
-            }
-            .hide-scrollbar::-webkit-scrollbar {
-              display: none;
-            }
-          `}</style>
-        </div>
-      )}
+        )}
 
-      {/* Back to Home button */}
-      <div className="flex justify-center pb-8">
-        <button
-          onClick={() => navigate('/')}
-          className="text-secondary hover:text-accent px-4 py-2 rounded-lg border border-secondary hover:border-accent"
-        >
-          ← العودة للرئيسية
-        </button>
+        <style>{`
+          .hide-scrollbar {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
       </div>
-    </div>
+    </>
   );
 }

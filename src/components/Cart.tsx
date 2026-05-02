@@ -216,7 +216,7 @@ const Cart: React.FC = () => {
                       .join('\n');
                     window.open(
                       `https://wa.me/201099490594?text=${encodeURIComponent(
-                        `الطلبية:\n${message}\n\nالمجموع: ${cartTotal} ج.م`
+                        `الطلبية:\n${message}\n\nالمجموع: ${calculateTotal()} ر.س`
                       )}`,
                       '_blank'
                     );

@@ -101,9 +101,9 @@ export default function Services() {
   }
 
   return (
-    <section className={`py-16 bg-gradient-to-br from-[${brownDark}] to-black`} id="products">
+    <section className={`py-16 bg-white`} id="products">
       <motion.div
-        className="container mx-auto px-4 bg-white/5 backdrop-blur-xl rounded-2xl p-8 border border-white/10 shadow-2xl shadow-black/40"
+        className="container mx-auto px-4"
         initial="hidden"
         animate="visible"
         variants={{
@@ -111,35 +111,24 @@ export default function Services() {
           visible: { opacity: 1, y: 0, transition: { duration: 0.8, delayChildren: 0.3, staggerChildren: 0.2 } },
         }}
       >
-        {/* العنوان */}
-        <motion.h2
-          className={`text-3xl font-bold text-center mb-12 text-[${lightGold}]`}
-           variants={{
-            hidden: { opacity: 0, y: -30 },
-            visible: { opacity: 1, y: 0 },
-          }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-        >
-          منتجاتنا
-        </motion.h2>
-        {/* Special Categories */}
+        {/* Category Buttons - All in one line */}
         <motion.div
-          className="flex flex-wrap gap-4 justify-center mb-6"
+          className="flex flex-wrap gap-2 justify-center mb-12"
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+            visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
           }}
         >
           {/* All Products Button */}
           <motion.button
             onClick={() => setSelectedCategory(null)}
-            className={`p-4 rounded-xl transition-all duration-300 ${
+            className={`px-6 py-2 transition-all duration-300 text-sm font-medium ${
               !selectedCategory
-                ? `bg-[var(--color-secondary,#34C759)] text-black font-bold shadow-md`
-                : 'bg-black/20 text-white hover:bg-black/30 hover:shadow-md'
+                ? `bg-red-500 text-white`
+                : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
             }`}
             variants={{
-              hidden: { opacity: 0, y: 20 },
+              hidden: { opacity: 0, y: 10 },
               visible: { opacity: 1, y: 0 },
             }}
           >
@@ -150,19 +139,17 @@ export default function Services() {
           {hasFeaturedProducts && (
             <motion.button
               onClick={() => setSelectedCategory('featured')}
-              className={`p-4 rounded-xl transition-all duration-300 ${
+              className={`px-6 py-2 transition-all duration-300 text-sm font-medium ${
                 selectedCategory === 'featured'
-                  ? `bg-[var(--color-secondary,#FFD700)] text-black font-bold shadow-md`
-                  : 'bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 hover:shadow-md'
+                  ? `bg-red-500 text-white`
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
               }`}
               variants={{
-                hidden: { opacity: 0, y: 20 },
+                hidden: { opacity: 0, y: 10 },
                 visible: { opacity: 1, y: 0 },
               }}
             >
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <span className="text-yellow-400">✨</span> أحدث العروض
-              </h3>
+              أحدث العروض
             </motion.button>
           )}
 
@@ -170,58 +157,48 @@ export default function Services() {
           {hasBestSellerProducts && (
             <motion.button
               onClick={() => setSelectedCategory('best_sellers')}
-              className={`p-4 rounded-xl transition-all duration-300 ${
+              className={`px-6 py-2 transition-all duration-300 text-sm font-medium ${
                 selectedCategory === 'best_sellers'
-                  ? `bg-[var(--color-secondary,#FF6B6B)] text-black font-bold shadow-md`
-                  : 'bg-red-500/20 text-red-300 hover:bg-red-500/30 hover:shadow-md'
+                  ? `bg-red-500 text-white`
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
               }`}
               variants={{
-                hidden: { opacity: 0, y: 20 },
+                hidden: { opacity: 0, y: 10 },
                 visible: { opacity: 1, y: 0 },
               }}
             >
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <span className="text-red-400">🔥</span> الأكثر مبيعاً
-              </h3>
+              الأكثر مبيعاً
             </motion.button>
           )}
-        </motion.div>
 
-        {/* Regular Categories */}
-        <motion.div
-          className="flex flex-wrap gap-4 justify-center mb-12"
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-          }}
-        >
+          {/* Regular Categories */}
           <AnimatePresence>
             {categories.map((category) => (
               <motion.button
                 key={category.id}
                 onClick={() => setSelectedCategory(category.id)}
-                className={`p-4 rounded-xl transition-all duration-300 ${
+                className={`px-6 py-2 transition-all duration-300 text-sm font-medium ${
                   category.id === selectedCategory
-                    ? `bg-[var(--color-secondary,#34C759)] text-black font-bold shadow-md`
-                    : 'bg-black/20 text-white hover:bg-black/30 hover:shadow-md'
+                    ? `bg-red-500 text-white`
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
                 }`}
                 variants={{
-                  hidden: { opacity: 0, y: 20 },
+                  hidden: { opacity: 0, y: 10 },
                   visible: { opacity: 1, y: 0 },
                 }}
               >
-                <h3 className="text-lg font-semibold">{category.name}</h3>
+                {category.name}
               </motion.button>
             ))}
           </AnimatePresence>
         </motion.div>
 
-        {/* Products Grid */}
+        {/* Products Grid - Auto-wrap with equal distribution */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
           variants={{
             hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+            visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
           }}
         >
           <AnimatePresence mode="wait">
@@ -252,8 +229,8 @@ export default function Services() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="col-span-full text-center text-white text-xl"
-                 transition={{ duration: 0.5 }}
+                className="col-span-full text-center text-gray-600 text-xl"
+                transition={{ duration: 0.5 }}
               >
                 لا توجد منتجات في هذه الفئة.
               </motion.div>

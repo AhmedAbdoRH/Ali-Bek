@@ -28,7 +28,7 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
 
   return (
     <div
-      className={`relative w-full h-[200px] md:h-[350px] lg:h-[500px] flex items-center justify-center overflow-hidden rounded-none mt-32 md:mt-32 fade-in-banner${fadeIn ? ' fade-in-active' : ''}`}
+      className={`relative w-full h-[300px] md:h-[550px] lg:h-[80vh] flex items-center justify-center overflow-hidden fade-in-banner${fadeIn ? ' fade-in-active' : ''}`}
       style={{ marginTop: 'var(--header-height, 4.9rem)' }}
     >
       {/* تأثير Fade-in للبانر عند أول تحميل */}
@@ -56,10 +56,10 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
               style={{ borderRadius: 0 }}
             />
           ) : (
-            <div className="w-full h-full min-h-full flex flex-col justify-center items-center bg-white/5 backdrop-blur-xl p-8 sm:p-12 border border-white/10 shadow-2xl">
+            <div className="w-full h-full min-h-full flex flex-col justify-center items-center bg-white p-8 sm:p-12">
               {banner.title && (
   <h1
-  className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2 text-center text-white"
+  className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-2 text-center text-black"
   style={{ fontFamily: `'Cairo', 'Tajawal', 'Amiri', 'Arial', 'sans-serif'`, letterSpacing: '0.03em', lineHeight: '1.2', marginBottom: '1rem' }}
 >
   {banner.title}
@@ -67,7 +67,7 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
 )}
 {banner.description && (
   <p
-    className="text-lg sm:text-xl mb-4 text-center text-gray-300"
+    className="text-lg sm:text-xl mb-4 text-center text-gray-700"
     style={{ fontFamily: `'Cairo', 'Tajawal', 'Amiri', 'Arial', 'sans-serif'`, letterSpacing: '0.02em', lineHeight: '1.7', marginTop: '0', marginBottom: '1.2rem' }}
   >
     {banner.description}
@@ -83,8 +83,8 @@ export default function BannerSlider({ banners }: BannerSliderProps) {
           {banners.map((_, idx) => (
             <button
               key={idx}
-              className={`w-1.5 h-1.5 rounded-full transition-colors border border-white/15
-                ${current === idx ? 'bg-white/20' : 'bg-white/10'}
+              className={`w-1.5 h-1.5 rounded-full transition-colors border
+                ${current === idx ? 'bg-red-500 border-red-500' : 'bg-gray-300 border-gray-300'}
               `}
               onClick={() => setCurrent(idx)}
               aria-label={`انتقل إلى البانر رقم ${idx + 1}`}

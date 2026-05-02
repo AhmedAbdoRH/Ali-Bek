@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 export default function LoadingScreen({
   logoUrl,
@@ -11,16 +11,22 @@ export default function LoadingScreen({
   const [fadeOut, setFadeOut] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
 
-  // Constants for timing
-  const FADE_START_DELAY = 1500; // ms, time until fade-out starts
-  const HIDE_DELAY = 3000; // ms, time until component is hidden
-  const FADE_OUT_DURATION_MS = HIDE_DELAY - FADE_START_DELAY; // Duration of the fade-out effect
+  // العبارات التي ستظهر وتتغير أثناء التحميل
+  const loadingPhrases = [
+    "نُجهز أحدث الموديلات...",
+    "نختار لكِ أجمل القطع...",
+    "الأناقة في الطريق إليكِ..."
+  ];
+
+  // إعدادات الوقت
+  const FADE_START_DELAY = 2800; // متى يبدأ الاختفاء
+  const HIDE_DELAY = 3500; // متى تختفي الشاشة تماماً
 
   useEffect(() => {
     let isMounted = true;
 
-    // Only attempt to load image if logoUrl is provided
     if (logoUrl) {
       const img = new Image();
       img.onload = () => {
@@ -32,24 +38,28 @@ export default function LoadingScreen({
       img.onerror = () => {
         if (isMounted) {
           setImageError(true);
-          setImageLoaded(true); // Still mark as loaded to continue animation flow
+          setImageLoaded(true);
         }
       };
       img.src = logoUrl;
     } else {
-      // If no logo URL provided, show the fallback (custom loader) immediately
       if (isMounted) {
         setImageError(true);
         setImageLoaded(true);
       }
     }
 
-    // Timer to start the fade-out of the entire screen
+    // تقليب العبارات كل 900 جزء من الثانية
+    const phraseInterval = setInterval(() => {
+      if (isMounted) {
+        setPhraseIndex((prev) => (prev + 1) % loadingPhrases.length);
+      }
+    }, 900);
+
     const timer1 = setTimeout(() => {
       if (isMounted) setFadeOut(true);
     }, FADE_START_DELAY);
 
-    // Timer to hide the component completely and call onFinish
     const timer2 = setTimeout(() => {
       if (isMounted) {
         setShow(false);
@@ -57,126 +67,146 @@ export default function LoadingScreen({
       }
     }, HIDE_DELAY);
 
-    // Cleanup function to clear timers if the component unmounts
     return () => {
       isMounted = false;
+      clearInterval(phraseInterval);
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [logoUrl, onFinish]); // Dependencies for the useEffect hook
+  }, [logoUrl, onFinish]);
 
-  // If show is false, render nothing
   if (!show) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity ease-in-out ${
-        fadeOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
+      dir="rtl"
+      className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FAFAFA] transition-all duration-700 ease-in-out ${
+        fadeOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
       }`}
-      style={{ 
-        transitionDuration: `${FADE_OUT_DURATION_MS}ms`,
-        backgroundColor: '#ffffff'
-      }}
     >
-      {/* Only render logo or custom loader once image loading status is determined */}
-      {imageLoaded && (
-        <>
-          {imageError ? (
-            // Fallback: Custom loader when image fails or no URL provided
-            <div className="custom-loader-entry-animation"> {/* Container for entry animation */}
-              <div className="custom-loader">
-                <div></div>
-                <div></div>
-              </div>
-            </div>
-          ) : (
-            // Show actual logo if it loaded successfully
+      <div className="flex flex-col items-center w-full max-w-sm px-6">
+        
+        {/* منطقة اللوجو أو أيقونة التي شيرت */}
+        <div className="h-32 flex items-center justify-center mb-8">
+          {imageLoaded && !imageError && logoUrl ? (
+            // تأثير ظهور اللوجو (Blur Reveal)
             <img
-              src={logoUrl}
+              src={logoUrl?.includes('supabase.co') ? '/favicon.png' : (logoUrl || '/favicon.png')}
               alt="Loading Logo"
-              className="w-32 h-32 sm:w-40 sm:h-40 object-contain logo-animation"
+              className="w-32 h-32 sm:w-40 sm:h-40 object-contain fashion-logo-reveal"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== '/favicon.png') target.src = '/favicon.png';
+              }}
             />
+          ) : (
+            // البديل: أيقونة تي شيرت ترسم نفسها وتتحرك
+            <div className="tshirt-container">
+              <svg 
+                className="w-16 h-16 text-gray-900 tshirt-svg" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="1.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                {/* ياقة التي شيرت (Collar) */}
+                <path 
+                  d="M8 4.5 C 8 7.5 16 7.5 16 4.5" 
+                  className="tshirt-neck" 
+                />
+                {/* الأكمام والجسم (Body & Sleeves) */}
+                <path 
+                  d="M8 4.5 L 3 6.5 L 4.5 11 L 7 9.5 V 21 H 17 V 9.5 L 19.5 11 L 21 6.5 L 16 4.5" 
+                  className="tshirt-body" 
+                />
+              </svg>
+            </div>
           )}
-        </>
-      )}
+        </div>
 
-      {/* CSS animations are defined here */}
+        {/* العبارات المتغيرة (Text Rotation) */}
+        <div className="h-6 relative w-full flex justify-center overflow-hidden mb-6">
+          {loadingPhrases.map((phrase, idx) => (
+            <span
+              key={idx}
+              className={`absolute text-sm font-bold tracking-wide text-gray-800 transition-all duration-500 ease-in-out ${
+                idx === phraseIndex 
+                  ? 'opacity-100 transform translate-y-0' 
+                  : 'opacity-0 transform translate-y-4'
+              }`}
+            >
+              {phrase}
+            </span>
+          ))}
+        </div>
+
+        {/* شريط التحميل الأنيق (Minimalist Progress Bar) */}
+        <div className="w-48 h-[2px] bg-gray-200 overflow-hidden rounded-full">
+          <div className="h-full bg-gray-900 progress-bar-fill"></div>
+        </div>
+      </div>
+
       <style>{`
-        /* Keyframe for initial appearance: fade in and scale up */
-        @keyframes fade-in-scale-up {
+        /* تأثير ظهور اللوجو */
+        .fashion-logo-reveal {
+          animation: blur-scale-reveal 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes blur-scale-reveal {
           0% {
             opacity: 0;
-            transform: translateY(20px) scale(0.95);
+            filter: blur(10px);
+            transform: scale(0.9);
           }
           100% {
             opacity: 1;
-            transform: translateY(0) scale(1);
+            filter: blur(0px);
+            transform: scale(1);
           }
         }
 
-        /* Keyframe for logo pulsing glow effect */
-        @keyframes pulse-glow {
-          0%, 100% {
-            transform: scale(1); /* Maintain scale from fade-in-scale-up */
-            filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.4));
-          }
-          50% {
-            transform: scale(1.04); /* Pulse effect */
-            filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
-          }
-        }
-
-        /* Animation class for the logo image */
-        .logo-animation {
-          animation:
-            fade-in-scale-up 0.8s cubic-bezier(.4,0,.2,1) forwards,
-            pulse-glow 2.5s infinite ease-in-out 0.8s; /* pulse-glow starts after fade-in */
-          will-change: transform, opacity, filter; /* Optimize animations */
-        }
-
-        /* Animation class for the custom loader's entry */
-        .custom-loader-entry-animation {
-          animation: fade-in-scale-up 0.8s cubic-bezier(.4,0,.2,1) forwards;
-          will-change: transform, opacity; /* Optimize animations */
-          display: flex; /* For centering the loader itself */
-          justify-content: center;
-          align-items: center;
+        /* ----- أنيميشن التي شيرت ----- */
+        .tshirt-svg {
+          /* حركة الطفو المستمرة للأعلى والأسفل */
+          animation: float-tshirt 3s ease-in-out infinite;
         }
         
-        /* Custom loader styles */
-        .custom-loader {
-          position: relative;
-          width: 64px;
-          height: 64px;
+        /* رسم ياقة التي شيرت أولاً */
+        .tshirt-neck {
+          stroke-dasharray: 30;
+          stroke-dashoffset: 30;
+          animation: draw-line 1s ease-out forwards;
         }
 
-        .custom-loader div {
-          box-sizing: border-box; /* Ensure border doesn't add to size */
-          position: absolute;
-          border: 4px solid #2a2a2a; /* Loader color set to dark */
-          border-radius: 50%;
-          animation: loader8435 1s ease-out infinite;
+        /* رسم جسم التي شيرت والأكمام بعد الياقة مباشرة */
+        .tshirt-body {
+          stroke-dasharray: 100;
+          stroke-dashoffset: 100;
+          animation: draw-line 1.5s ease-out 0.4s forwards;
         }
 
-        .custom-loader div:nth-child(2) {
-          animation-delay: -0.5s; /* Second circle starts later */
-        }
-
-        @keyframes loader8435 {
-          0% {
-            top: 32px; /* Center within 64px parent */
-            left: 32px; /* Center within 64px parent */
-            width: 0;
-            height: 0;
-            opacity: 1;
+        @keyframes draw-line {
+          to {
+            stroke-dashoffset: 0;
           }
-          100% {
-            top: 0px;
-            left: 0px;
-            width: 64px; /* Expand to full size of parent */
-            height: 64px; /* Expand to full size of parent */
-            opacity: 0;
-          } 
+        }
+
+        @keyframes float-tshirt {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
+
+        /* شريط التحميل */
+        .progress-bar-fill {
+          width: 0%;
+          animation: load-progress ${FADE_START_DELAY}ms cubic-bezier(0.65, 0, 0.35, 1) forwards;
+        }
+
+        @keyframes load-progress {
+          0% { width: 0%; }
+          50% { width: 70%; }
+          100% { width: 100%; }
         }
       `}</style>
     </div>

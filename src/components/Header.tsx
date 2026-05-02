@@ -29,6 +29,10 @@ export default function Header({ storeSettings }: HeaderProps) {
   const cartRef = useRef<HTMLLIElement>(null);
   const cartButtonRef = useRef<HTMLButtonElement>(null);
   const cartDropdownRef = useRef<HTMLDivElement>(null);
+  
+  // Logo URL - Use Cloudinary URL or fallback
+  const LOGO_URL = 'https://res.cloudinary.com/dvikey3wc/image/upload/v1777538257/WhatsApp_Image_2026-04-26_at_11.57.10_PM_o82w9q.png';
+  
   const { 
     toggleCart, 
     itemCount, 
@@ -215,12 +219,12 @@ export default function Header({ storeSettings }: HeaderProps) {
 
   return (
     <>
-      <header className="fixed top-0 w-full z-50 bg-black/50 backdrop-blur-md border-b border-white/10">
+      <header className="fixed top-0 w-full z-50 bg-white border-b border-gray-200">
         <div className="container mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
             <button 
-              className="md:hidden text-white p-2 -ml-2 mobile-menu-button"
+              className="md:hidden text-black p-2 -ml-2 mobile-menu-button"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label="القائمة"
             >
@@ -229,9 +233,9 @@ export default function Header({ storeSettings }: HeaderProps) {
             
             <Link to="/" className="flex-shrink-0">
               <img 
-                src={storeSettings?.logo_url || '/logo.png'}
-                alt={storeSettings?.store_name || 'الشعار'} 
-                className="h-16 md:h-20 w-auto"
+                src={LOGO_URL}
+                alt="اللوجو" 
+                className="h-10 md:h-14 w-auto"
               />
             </Link>
           </div>
@@ -252,16 +256,16 @@ export default function Header({ storeSettings }: HeaderProps) {
                 }}
                 onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 placeholder="ابحث عن منتج..."
-                className="w-full bg-white/10 text-white placeholder-white/50 rounded-full py-2 pr-10 pl-4 focus:outline-none focus:ring-2 focus:ring-[#FFD700] transition-all duration-300"
+                className="w-full bg-gray-100 text-black placeholder-gray-500 py-2 pr-10 pl-4 focus:outline-none focus:ring-2 focus:ring-red-500 transition-all duration-300"
               />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-white/50" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               {searchQuery && (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     clearSearch();
                   }}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-black transition-colors"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -270,29 +274,28 @@ export default function Header({ storeSettings }: HeaderProps) {
             
             {/* Search Results Dropdown */}
             {isSearchFocused && (searchResults.length > 0 || (searchQuery.length >= 2 && searchResults.length === 0)) && (
-              <div className="absolute mt-2 w-full bg-black/90 backdrop-blur-md rounded-lg shadow-xl border border-white/10 overflow-hidden z-50">
+              <div className="absolute mt-2 w-full bg-white border border-gray-200 rounded shadow-xl overflow-hidden z-50">
                 {searchResults.map((product) => (
                   <Link
                     key={product.id}
                     to={`/product/${product.id}`}
-                    className="flex items-center p-3 hover:bg-white/10 transition-colors duration-200 border-b border-white/5 last:border-0"
+                    className="flex items-center p-3 hover:bg-gray-100 transition-colors duration-200 border-b border-gray-100 last:border-0"
                     onClick={clearSearch}
                   >
-                    <div className="w-12 h-12 flex-shrink-0 rounded-md overflow-hidden bg-white/5 flex items-center justify-center">
+                    <div className="w-12 h-12 flex-shrink-0 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
                       <img 
                         src={product.displayImage} 
                         alt={product.title}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          // Fallback to placeholder if image fails to load
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder-product.jpg';
                         }}
                       />
                     </div>
                     <div className="flex-1 text-right pr-2">
-                      <h4 className="text-white font-medium">{product.title}</h4>
-                      <p className="text-xs text-white/60">
+                      <h4 className="text-black font-medium">{product.title}</h4>
+                      <p className="text-xs text-gray-600">
                         {product.category?.name || ''}
                       </p>
                     </div>
@@ -300,7 +303,7 @@ export default function Header({ storeSettings }: HeaderProps) {
                 ))}
                 
                 {searchResults.length === 0 && searchQuery.length >= 2 && (
-                  <div className="p-4 text-center text-white/70">
+                  <div className="p-4 text-center text-gray-600">
                     لا توجد نتائج لـ "{searchQuery}"
                   </div>
                 )}
@@ -318,13 +321,12 @@ export default function Header({ storeSettings }: HeaderProps) {
                 if (isCartOpen) {
                   toggleCart(false);
                 }
-                // If we're opening the search, focus will be handled by the effect
                 // If we're closing it, blur any active element
                 if (wasOpen && document.activeElement) {
                   (document.activeElement as HTMLElement).blur();
                 }
               }}
-              className="md:hidden p-2 text-white hover:text-[#FFD700] transition-colors"
+              className="md:hidden p-2 text-black hover:text-red-500 transition-colors"
               aria-label="بحث"
             >
               <Search className="h-6 w-6" />
@@ -333,14 +335,9 @@ export default function Header({ storeSettings }: HeaderProps) {
             <nav>
               <ul className="flex gap-4 md:gap-6 items-center">
                 <li className="hidden md:block">
-                  <Link to="/" className="text-white hover:text-[#FFD700] transition-colors duration-300">
+                  <Link to="/" className="text-black hover:text-red-500 transition-colors duration-300 font-medium">
                     الرئيسية
                   </Link>
-                </li>
-                <li>
-                  <a href="#contact" className="text-white hover:text-[#FFD700] transition-colors duration-300">
-                    تواصل معنا
-                  </a>
                 </li>
                 <li className="relative" ref={cartRef}>
                   <div className="relative">
@@ -349,14 +346,14 @@ export default function Header({ storeSettings }: HeaderProps) {
                         e.stopPropagation();
                         toggleCart(!isCartOpen);
                       }}
-                      className="relative p-2 text-white hover:text-[#FFD700] transition-colors"
+                      className="relative p-2 text-black hover:text-red-500 transition-colors"
                       aria-label="عرض السلة"
                       aria-expanded={isCartOpen}
                     >
                       <div className="relative">
                         <ShoppingCart className="h-6 w-6" />
                         {itemCount > 0 && (
-                          <span className="absolute -top-2 -right-2 bg-[#FFD700] text-black text-xs font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 border-2 border-black/10 shadow-sm">
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] flex items-center justify-center px-1 border-2 border-white shadow-sm">
                             {itemCount > 9 ? '9+' : itemCount}
                           </span>
                         )}
@@ -366,23 +363,23 @@ export default function Header({ storeSettings }: HeaderProps) {
                     {/* Cart Preview Dropdown */}
                     {isCartOpen && (
                       <div 
-                        className="fixed left-1/2 transform -translate-x-1/2 mt-2 w-[90vw] max-w-2xl max-h-[calc(100vh-8rem)] bg-black/95 backdrop-blur-md rounded-lg shadow-xl border border-white/10 z-50 p-4 overflow-y-auto"
+                        className="fixed left-1/2 transform -translate-x-1/2 mt-2 w-[90vw] max-w-2xl max-h-[calc(100vh-8rem)] bg-white border border-gray-200 rounded shadow-xl z-50 p-4 overflow-y-auto"
                         style={{
                           top: 'calc(var(--header-height, 5rem) + 1rem)'
                         }}
                       >
-                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-white/10">
-                          <h3 className="text-white font-bold text-lg">
+                        <div className="flex justify-between items-center mb-3 pb-2 border-b border-gray-200">
+                          <h3 className="text-black font-bold text-lg">
                             سلة التسوق
                           </h3>
-                          <span className="text-sm text-white/60">
+                          <span className="text-sm text-gray-600">
                             {itemCount} عنصر
                           </span>
                         </div>
                         <div className="max-h-96 overflow-y-auto pr-2">
                           {cartItems.map((item) => (
-                            <div key={item.id} className="flex items-center gap-3 py-3 border-b border-white/5 last:border-0">
-                              <div className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden bg-white/5">
+                            <div key={item.id} className="flex items-center gap-3 py-3 border-b border-gray-100 last:border-0">
+                              <div className="w-16 h-16 flex-shrink-0 rounded overflow-hidden bg-gray-100">
                                 <img 
                                   src={item.imageUrl} 
                                   alt={item.title}
@@ -394,9 +391,9 @@ export default function Header({ storeSettings }: HeaderProps) {
                                 />
                               </div>
                               <div className="flex-1 text-right">
-                                <h4 className="text-white text-sm font-medium line-clamp-1">{item.title}</h4>
+                                <h4 className="text-black text-sm font-medium line-clamp-1">{item.title}</h4>
                                 <div className="flex items-center justify-between mt-1">
-                                  <span className="text-[#FFD700] font-bold">{item.price} ج</span>
+                                  <span className="text-red-500 font-bold">{item.price} ج</span>
                                   <div className="flex items-center gap-2">
                                     <button 
                                       onClick={(e) => {
@@ -408,19 +405,19 @@ export default function Header({ storeSettings }: HeaderProps) {
                                           toast.success('تمت إزالة المنتج من السلة');
                                         }
                                       }}
-                                      className="w-6 h-6 flex items-center justify-center bg-white/10 rounded hover:bg-white/20 transition-colors"
+                                      className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition-colors"
                                     >
-                                      <span className="text-white text-lg">-</span>
+                                      <span className="text-black text-lg">-</span>
                                     </button>
-                                    <span className="text-white w-6 text-center">{item.quantity}</span>
+                                    <span className="text-black w-6 text-center">{item.quantity}</span>
                                     <button 
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         updateQuantity(item.id, item.quantity + 1);
                                       }}
-                                      className="w-6 h-6 flex items-center justify-center bg-white/10 rounded hover:bg-white/20 transition-colors"
+                                      className="w-6 h-6 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300 transition-colors"
                                     >
-                                      <span className="text-white text-lg">+</span>
+                                      <span className="text-black text-lg">+</span>
                                     </button>
                                   </div>
                                 </div>
@@ -431,7 +428,7 @@ export default function Header({ storeSettings }: HeaderProps) {
                                   removeFromCart(item.id);
                                   toast.success('تمت إزالة المنتج من السلة');
                                 }}
-                                className="text-white/50 hover:text-red-500 transition-colors p-1"
+                                className="text-gray-400 hover:text-red-500 transition-colors p-1"
                                 aria-label="إزالة من السلة"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -439,11 +436,11 @@ export default function Header({ storeSettings }: HeaderProps) {
                             </div>
                           ))}
                         </div>
-                        <div className="mt-4 pt-3 border-t border-white/10">
+                        <div className="mt-4 pt-3 border-t border-gray-200">
                           <div className="flex justify-between items-center mb-4">
-                            <span className="text-white/70">المجموع:</span>
+                            <span className="text-gray-600">المجموع:</span>
                             <div className="text-right">
-                              <div className="text-[#FFD700] font-bold text-lg">
+                              <div className="text-red-500 font-bold text-lg">
                                 {(() => {
                                   try {
                                     const numericValue = parseFloat(cartTotal);
@@ -470,7 +467,7 @@ export default function Header({ storeSettings }: HeaderProps) {
                               sendOrderViaWhatsApp();
                               setIsCartHovered(false);
                             }}
-                            className="w-full bg-[#FFD700] hover:bg-yellow-500 text-black font-bold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
+                            className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 transition-colors duration-300 flex items-center justify-center gap-2"
                           >
                             <ShoppingCart className="h-5 w-5" />
                             اكمال الطلب
@@ -481,12 +478,11 @@ export default function Header({ storeSettings }: HeaderProps) {
                   </div>
                 </li>
               </ul>
-              </nav>
-            </div>
+            </nav>
             
             {/* Mobile Search Bar - Only shown when toggled */}
             {isMobileSearchOpen && (
-              <div className="fixed top-20 left-0 right-0 bg-black/90 backdrop-blur-md p-4 z-40 border-b border-white/10 md:hidden">
+              <div className="fixed top-20 left-0 right-0 bg-white p-4 z-40 border-b border-gray-200 md:hidden">
                 <div className="relative">
                   <input
                     ref={searchInputRef}
@@ -494,32 +490,32 @@ export default function Header({ storeSettings }: HeaderProps) {
                     value={searchQuery}
                     onChange={(e) => handleSearch(e.target.value)}
                     placeholder="ابحث عن منتج..."
-                    className="w-full bg-white/10 text-white placeholder-white/50 rounded-full py-3 px-5 pr-12 focus:outline-none focus:ring-2 focus:ring-[#FFD700]"
+                    className="w-full bg-gray-100 text-black placeholder-gray-500 py-3 px-5 pr-12 focus:outline-none focus:ring-2 focus:ring-red-500"
                   />
                   <button
                     onClick={() => {
                       setSearchQuery('');
                       setSearchResults([]);
                     }}
-                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-black"
                   >
                     <X className="h-5 w-5" />
                   </button>
                   
                   {/* Mobile Search Results */}
                   {searchResults.length > 0 && (
-                    <div className="absolute left-0 right-0 mt-2 bg-black/90 rounded-lg shadow-xl border border-white/10 overflow-hidden z-50 max-h-80 overflow-y-auto">
+                    <div className="absolute left-0 right-0 mt-2 bg-white rounded shadow-xl border border-gray-200 overflow-hidden z-50 max-h-80 overflow-y-auto">
                       {searchResults.map((product) => (
                         <Link
                           key={product.id}
                           to={`/product/${product.id}`}
-                          className="flex items-center p-3 hover:bg-white/10 transition-colors duration-200 border-b border-white/5 last:border-0"
+                          className="flex items-center p-3 hover:bg-gray-100 transition-colors duration-200 border-b border-gray-100 last:border-0"
                           onClick={() => {
                             clearSearch();
                             setIsMobileSearchOpen(false);
                           }}
                         >
-                          <div className="w-10 h-10 flex-shrink-0 rounded-md overflow-hidden bg-white/5 flex items-center justify-center">
+                          <div className="w-10 h-10 flex-shrink-0 rounded overflow-hidden bg-gray-100 flex items-center justify-center">
                             <img 
                               src={product.displayImage} 
                               alt={product.title}
@@ -531,9 +527,9 @@ export default function Header({ storeSettings }: HeaderProps) {
                             />
                           </div>
                           <div className="flex-1 text-right pr-2">
-                            <h4 className="text-white font-medium text-sm">{product.title}</h4>
+                            <h4 className="text-black font-medium text-sm">{product.title}</h4>
                             {product.category?.name && (
-                              <p className="text-xs text-white/60">{product.category.name}</p>
+                              <p className="text-xs text-gray-600">{product.category.name}</p>
                             )}
                           </div>
                         </Link>
@@ -544,6 +540,7 @@ export default function Header({ storeSettings }: HeaderProps) {
               </div>
             )}
           </div>
+        </div>
         </header>
 
         {/* Mobile Sidebar */}
@@ -554,34 +551,34 @@ export default function Header({ storeSettings }: HeaderProps) {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', ease: 'easeInOut' }}
-              className="fixed inset-y-0 right-0 w-72 bg-black/95 backdrop-blur-lg z-50 shadow-2xl md:hidden pt-16 flex flex-col"
+              className="fixed inset-y-0 right-0 w-72 bg-white z-50 shadow-2xl md:hidden pt-16 flex flex-col border-l border-gray-200"
               ref={menuRef}
             >
               <nav className="p-4 flex-1 overflow-y-auto">
                 <ul className="space-y-1">
-                  <li className="bg-white/2 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.05)]">
+                  <li className="bg-gray-50 rounded shadow-sm">
                     <Link 
                       to="/" 
-                      className="block px-5 py-4 text-lg text-white hover:bg-white/10 rounded-lg transition-colors font-medium"
+                      className="block px-5 py-4 text-lg text-black hover:bg-gray-100 rounded transition-colors font-medium"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       الصفحة الرئيسية
                     </Link>
                   </li>
                   
-                  <li className="mt-6 bg-white/5 rounded-lg shadow-[0_2px_8px_rgba(0,0,0,0.1)]">
-                    <div className="px-5 py-1.5 text-white/60 text-sm font-normal border-b border-white/10">
+                  <li className="mt-6 bg-gray-50 rounded shadow-sm">
+                    <div className="px-5 py-1.5 text-gray-600 text-sm font-normal border-b border-gray-200">
                       الأقسام
                     </div>
                     {loadingCategories ? (
-                      <div className="px-5 py-4 text-white/50 text-base text-center">جاري التحميل...</div>
+                      <div className="px-5 py-4 text-gray-500 text-base text-center">جاري التحميل...</div>
                     ) : categories.length > 0 ? (
                       <ul className="mt-1">
                         {categories.map((category) => (
-                          <li key={category.id} className="border-b border-white/5 last:border-0">
+                          <li key={category.id} className="border-b border-gray-200 last:border-0">
                             <Link 
                               to={`/category/${category.id}`}
-                              className="block px-5 py-4 text-white hover:bg-white/10 transition-colors text-base font-medium"
+                              className="block px-5 py-4 text-black hover:bg-gray-100 transition-colors text-base font-medium"
                               onClick={() => setIsMenuOpen(false)}
                             >
                               {category.name}
@@ -590,17 +587,17 @@ export default function Header({ storeSettings }: HeaderProps) {
                         ))}
                       </ul>
                     ) : (
-                      <div className="px-5 py-4 text-white/50 text-base text-center">لا توجد أقسام متاحة</div>
+                      <div className="px-5 py-4 text-gray-500 text-base text-center">لا توجد أقسام متاحة</div>
                     )}
                   </li>
                 </ul>
               </nav>
               
               {/* Close button at the bottom */}
-              <div className="p-4 border-t border-white/10">
+              <div className="p-4 border-t border-gray-200">
                 <button
                   onClick={() => setIsMenuOpen(false)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/10 hover:bg-white/20 rounded-lg text-white transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded text-black transition-colors"
                 >
                   <X className="h-5 w-5" />
                   <span>إغلاق القائمة</span>
@@ -616,7 +613,7 @@ export default function Header({ storeSettings }: HeaderProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            className="fixed inset-0 bg-black/30 z-40 md:hidden"
             onClick={() => setIsMenuOpen(false)}
           />
         )}

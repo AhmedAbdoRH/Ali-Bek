@@ -148,7 +148,7 @@ function App() {
           ? (storeSettings as any).theme_settings.backgroundGradient
           : (storeSettings && (storeSettings as any).theme_settings?.backgroundColor)
             ? (storeSettings as any).theme_settings.backgroundColor
-            : "linear-gradient(135deg, #232526 0%, #414345 100%)", // Default fallback
+            : "#ffffff", // Default fallback to white
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
