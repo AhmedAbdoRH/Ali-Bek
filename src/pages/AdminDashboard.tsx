@@ -597,14 +597,17 @@ export default function AdminDashboard({ onSettingsUpdate }: AdminDashboardProps
         is_best_seller: newService.is_best_seller || false
       };
       
-      console.log('Adding service:', serviceToAdd); // Debug log
+      console.log('Adding service:', JSON.stringify(serviceToAdd, null, 2)); // Debug log
       
       const { data, error } = await supabase
         .from('services')
         .insert([serviceToAdd])
         .select();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', JSON.stringify(error, null, 2));
+        throw error;
+      }
       
       console.log('Service added successfully:', data); // Debug log
 

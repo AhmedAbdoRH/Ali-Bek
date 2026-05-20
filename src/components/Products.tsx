@@ -57,13 +57,13 @@ export default function Services() {
   };
 
   // عرض تدريجي للمنتجات مع زر "إظهار المزيد"
-  const [visibleCount, setVisibleCount] = useState(10);
+  const [visibleCount, setVisibleCount] = useState(20);
   const filteredServices = selectedCategory
     ? services.filter(service => service.category_id === selectedCategory)
     : services;
   const visibleServices = filteredServices.slice(0, visibleCount);
   const canShowMore = visibleCount < filteredServices.length;
-  const handleShowMore = () => setVisibleCount(c => c + 10);
+  const handleShowMore = () => setVisibleCount(c => c + 20);
 
   if (isLoading) {
     return (
@@ -79,7 +79,7 @@ export default function Services() {
     return (
       <div className={`py-16 bg-gradient-to-br from-[${brownDark}] to-black`}>
         <div className="container mx-auto px-4 text-center text-red-600">
-          حدث خطأ أثناء تحميل العطور
+          حدث خطأ أثناء تحميل الملابس
         </div>
       </div>
     );
@@ -140,7 +140,7 @@ export default function Services() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
           >
-            جميع العطور
+            جميع الملابس
           </motion.button>
           <AnimatePresence>
             {categories.map((category, idx) => (
@@ -166,7 +166,7 @@ export default function Services() {
           </AnimatePresence>
         </motion.div>
 
-        {/* الخدمات */}
+        {/* الملابس */}
         <motion.div
   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
   initial="hidden"

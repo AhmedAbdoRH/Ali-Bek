@@ -17,6 +17,7 @@ export default function Services() {
   const [error, setError] = useState<string | null>(null);
   const [hasFeaturedProducts, setHasFeaturedProducts] = useState(false);
   const [hasBestSellerProducts, setHasBestSellerProducts] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(20);
 
   useEffect(() => {
     fetchCategories();
@@ -81,6 +82,14 @@ export default function Services() {
     return services.filter(service => service.category_id === selectedCategory);
   }, [selectedCategory, services]);
 
+  // عند تغيير الفئة، أعد تعيين العدد المرئي إلى 20
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [selectedCategory]);
+
+  const visibleServices = filteredServices().slice(0, visibleCount);
+  const canShowMore = visibleCount < filteredServices().length;
+
   if (isLoading) {
     return (
       <div className={`py-16 bg-gradient-to-br from-[${brownDark}] to-black`}>
@@ -94,7 +103,7 @@ export default function Services() {
     return (
       <div className={`py-16 bg-gradient-to-br from-[${brownDark}] to-black`}>
         <div className="container mx-auto px-4 text-center text-red-600">
-          حدث خطأ أثناء تحميل العطور: {error}
+          حدث خطأ أثناء تحميل الملابس: {error}
         </div>
       </div>
     );
@@ -132,7 +141,7 @@ export default function Services() {
               visible: { opacity: 1, y: 0 },
             }}
           >
-            جميع العطور
+            جميع الملابس
           </motion.button>
 
           {/* Featured Products Category */}
@@ -202,8 +211,8 @@ export default function Services() {
           }}
         >
           <AnimatePresence mode="wait">
-            {filteredServices().length > 0 ? (
-              filteredServices().map((service) => (
+            {visibleServices.length > 0 ? (
+              visibleServices.map((service) => (
                 <motion.div
                   key={service.id}
                   variants={{
@@ -237,6 +246,23 @@ export default function Services() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        {/* Show More Button */}
+        {canShowMore && (
+          <motion.div
+            className="flex justify-center mt-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <button
+              onClick={() => setVisibleCount(c => c + 20)}
+              className="px-8 py-3 bg-red-500 text-white font-bold text-lg rounded-lg hover:bg-red-600 transition-colors duration-200"
+            >
+              عرض المزيد
+            </button>
+          </motion.div>
+        )}
       </motion.div>
     </section>
   );

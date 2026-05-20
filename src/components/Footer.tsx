@@ -19,7 +19,15 @@ export default function Footer({ storeSettings }: FooterProps) {
 
   return (
     <footer className="bg-secondary/5 backdrop-blur-md border-t border-secondary/20">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-12">
+        {/* About Section */}
+        <div className="mb-8 pb-8 border-b border-secondary/20">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">من نحن</h3>
+          <p className="text-gray-700 text-sm leading-relaxed max-w-2xl">
+            بخبرة تمتد لأكثر من 20 عاماً في سوق الزي الموحد، نفخر بكوننا الشريك الاستراتيجي لأكبر الشركات في السوق المصري. نحن لا نصنع مجرد ملابس، بل نصمم هوية بصرية تعكس تفوق وثقة فريق عملكم.
+          </p>
+        </div>
+
         <div className="flex flex-col items-center gap-4">
 
           {socialLinks.length > 0 && (

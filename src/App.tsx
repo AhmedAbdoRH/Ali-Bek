@@ -6,6 +6,7 @@ import { CartProvider } from './contexts/CartContext';
 import Cart from './components/Cart';
 import Header from './components/Header';
 import BannerSlider from './components/BannerSlider';
+import About from './components/About';
 import Services from './components/Services';
 import Footer from './components/Footer';
 import Testimonials from './components/Testimonials';
@@ -171,7 +172,7 @@ function App() {
     return (
       <LoadingScreen
         logoUrl={storeSettings?.logo_url || '/logo.png'} // Provide a default logo
-        storeName={storeSettings?.store_name || 'متجر العطور'}
+        storeName={storeSettings?.store_name || 'متجر الملابس'}
       />
     );
   }
@@ -250,6 +251,8 @@ function StaggeredHome({
 
   return (
     <>
+      {/* About section is part of the staggered load */}
+      <About />
       {/* Services component is part of the staggered load */}
       <Services onLoaded={() => { /* Optionally handle service load */ }} />
       {/* You can add more home page sections here to stagger them if needed */}
