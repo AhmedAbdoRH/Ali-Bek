@@ -184,7 +184,6 @@ export default function Services() {
     }
   }}
 >
-        >
           <AnimatePresence>
             {visibleServices.map((service, idx) => (
               <motion.div

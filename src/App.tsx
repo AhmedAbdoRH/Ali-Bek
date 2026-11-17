@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase';
 import { CartProvider } from './contexts/CartContext';
 import Cart from './components/Cart';
 import Header from './components/Header';
+import Hero from './components/Hero';
 import BannerSlider from './components/BannerSlider';
 import About from './components/About';
 import Services from './components/Services';
@@ -157,10 +158,11 @@ function App() {
       }}
     >
       <Header storeSettings={storeSettings} />
-      {window.location.pathname === '/' && layoutBanners.length > 0 && (
-        <BannerSlider banners={layoutBanners} />
-      )}
       <MainFade>{children}</MainFade>
+      {window.location.pathname === '/' &&
+        layoutBanners.some((b) => b.type === 'image' && b.image_url) && (
+          <BannerSlider banners={layoutBanners.filter((b) => b.type === 'image' && b.image_url)} />
+        )}
       {window.location.pathname === '/' && storeSettings?.show_testimonials && (
         <Testimonials />
       )}
@@ -172,8 +174,8 @@ function App() {
   if (loading) {
     return (
       <LoadingScreen
-        logoUrl={storeSettings?.logo_url || '/logo.png'} // Provide a default logo
-        storeName={storeSettings?.store_name || 'متجر الملابس'}
+        logoUrl={storeSettings?.logo_url || '/logo.png'}
+        onFinish={() => setLoading(false)}
       />
     );
   }
@@ -252,6 +254,7 @@ function StaggeredHome({
 
   return (
     <>
+      <Hero />
       {/* About section is part of the staggered load */}
       <About />
       <CategoryCards />
